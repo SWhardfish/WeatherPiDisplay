@@ -189,16 +189,16 @@ class Weather(WeatherModule):
                                    max_lines=max_lines)
 
         self.clear_surface()
-        self.draw_image(weather_icon, (0, 0))
-        self.draw_text(message1, (text_x, 15), "large", heat_color, bold=True)
-        self.draw_text(message2, (text_x, 52), "small", "white")
+        self.draw_image(weather_icon, (15, 28))
+        self.draw_text(message1, (text_x+28, 15), "large", heat_color, bold=True)
+        self.draw_text(message2, (text_x+28, 52), "small", "white")
         i = message3.index("UV")
-        (right, _bottom) = self.draw_text(message3[:i], (text_x, 70), "small",
+        (right, _bottom) = self.draw_text(message3[:i], (text_x+28, 70), "small",
                                           "white")
         self.draw_text(message3[i:], (right, 70), "small", uv_color, bold=True)
         height = 70 + (15 * (max_lines - len(message4s))) / 2
         for message in message4s:
-            self.draw_text(message, (text_x, height),
+            self.draw_text(message, (text_x+28, height),
                            "small",
                            "blue",
                            bold=True)
@@ -291,7 +291,7 @@ class SunriseSuset(WeatherModule):
 
         self.clear_surface()
         self.draw_image(sun_icon, ((self.rect.width - self.icon_size) / 2,
-                                   (self.rect.height - self.icon_size) / 2))
+                                   (self.rect.height - self.icon_size + 9) / 2))
         self.draw_text(sunrise, (0, 5), "small", "white", align="center")
         self.draw_text(sunset, (0, self.rect.height - 20),
                        "small",
