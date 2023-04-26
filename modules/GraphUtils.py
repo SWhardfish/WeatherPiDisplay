@@ -12,11 +12,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.ticker import StrMethodFormatter
-from matplotlib import font_manager
+#from matplotlib import font_manager
+#import seaborn as sns
 
 # matplotlib parameters
 matplotlib.pyplot.switch_backend("Agg")
-matplotlib.rcParams['font.family'] = "arial"
+#matplotlib.rcParams['font.family'] = "arial"
 
 #dpi = 50
 
@@ -40,7 +41,7 @@ def synchronized(wrapped):
 def _draw_2axis_graph(screen, surface, rect, times, y1, ylabel1, y2, ylabel2,
                       title, yscale1, yscale2):
     # Plot graph
-    df = pandas.read_csv('GraphData.csv', usecols=['xdate', 'temp', 'press', 'rain_1h', 'windspeed', 'windgust'], parse_dates=['xdate'])
+    df = pandas.read_csv('GraphData.csv', usecols=['xdate', 'temp', 'press', 'rain_1h', 'windspeed', 'windgust', 'snow_1h'], parse_dates=['xdate'])
     df['xdate'] = pandas.to_datetime(df['xdate'])
     df.set_index('xdate', inplace=True)
 
@@ -52,6 +53,7 @@ def _draw_2axis_graph(screen, surface, rect, times, y1, ylabel1, y2, ylabel2,
     y3axis = df['rain_1h']
     y4axis = df['windspeed']
     y5axis = df['windgust']
+    y6axis = df['snow_1h']
 
     fig, (ax, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True, figsize=(4.9, 3.3))
     plt.subplots_adjust(hspace=2.0)
@@ -59,6 +61,10 @@ def _draw_2axis_graph(screen, surface, rect, times, y1, ylabel1, y2, ylabel2,
     ax.plot(xaxis, yaxis, color='Crimson', linewidth=0.4)
     ax2.plot(xaxis, y2axis, color='Blue', linewidth=0.4)
     ax3.bar(xaxis, y3axis, color='CornflowerBlue', width=5/24/60)
+    ax3.bar(xaxis, y6axis, color='White', width=5/24/60)
+    #ax3b = ax3.twinx()
+    #ax3b.bar(xaxis, y6axis, color='white', width=5/24/60)
+
     ax4.bar(xaxis, y4axis, color='SeaGreen', width=2.5/24/60)
     ax4.scatter(xaxis, y5axis, color='LightGreen', s=0.1)
 
@@ -104,7 +110,9 @@ def _draw_2axis_graph(screen, surface, rect, times, y1, ylabel1, y2, ylabel2,
     # Convert to pygame image
     f = io.BytesIO()
     plt.tight_layout()
+    #plt.savefig('filename.jpg', facecolor=(0, 0, 0), transparent=False, bbox_inches='tight', dpi=150)
     plt.savefig(f, format="png", transparent=True, bbox_inches='tight')
+
     plt.close(fig)
     f.seek(0)
     image = pygame.image.load(f)

@@ -100,7 +100,14 @@ class Weather(WeatherModule):
             rain_1h = current["rain"]["1h"]
         except KeyError:
             rain_1h = '0'
+        print(rain_1h)
+        try:
+            snow_1h = current["snow"]["1h"]
+        except KeyError:
+            snow_1h = '0'
+        print(snow_1h)
         windspeed = current["wind_speed"]
+        print(windspeed)
         try:
             windgust = current["wind_gust"]
         except KeyError:
@@ -133,23 +140,24 @@ class Weather(WeatherModule):
         xpressure = pressure
         xpressure = xpressure[:-2]
         xtimestamp = time.strftime('%m-%d-%Y %H:%M:%S')
+        #snow_1h = snow_1h
 
         graph = "GraphDataLog.txt"
         file = open(graph, "a", newline='')
 
         with file:
-            myfields = ['xdate', 'temp', 'press', 'rain_1h', 'windspeed', 'windgust']
+            myfields = ['xdate', 'temp', 'press', 'rain_1h', 'windspeed', 'windgust', 'snow_1h']
             writer = csv.DictWriter(file, fieldnames=myfields)
             #writer.writeheader()
-            writer.writerow({'xdate': xtimestamp, 'temp': xtemperature, 'press': xpressure, 'rain_1h': rain_1h, 'windspeed': windspeed, 'windgust': windgust})
+            writer.writerow({'xdate': xtimestamp, 'temp': xtemperature, 'press': xpressure, 'rain_1h': rain_1h, 'windspeed': windspeed, 'windgust': windgust, 'snow_1h': snow_1h})
         #file.close()
         df = pandas.read_csv(graph)
 
         # convert to datetime
-        df['xdate'] = pandas.to_datetime(df['xdate'])
+        df['xdate'] = pandas.to_datetime(df['xdate'], utc=True)
         # calculate mask
-        m1 = df['xdate'] >= (pandas.to_datetime('now') - pandas.DateOffset(days=1))
-        m2 = df['xdate'] <= pandas.to_datetime('now')
+        m1 = df['xdate'] >= (pandas.to_datetime('now', utc=True) - pandas.DateOffset(days=1))
+        m2 = df['xdate'] <= pandas.to_datetime('now', utc=True)
         #mask = m1 & m2
         mask = m1
         # output masked dataframes
@@ -160,6 +168,23 @@ class Weather(WeatherModule):
         """
         END GraphLog
         """
+        #Trim file
+        from datetime import datetime, timedelta
+
+        # Read the contents of the GraphDataLog.txt file
+        with open("GraphDataLog.txt", "r") as f:
+            data = f.readlines()
+
+        # Parse the data and find the date that is 2 days before the current date
+        two_days_ago = datetime.now() - timedelta(days=2)
+        filtered_data = [row for row in data if not row.startswith("xdate") and
+                            datetime.strptime(row.split(",")[0],
+                                                    "%m-%d-%Y %H:%M:%S") >= two_days_ago]
+
+        # Write the remaining rows back to the GraphDataLog.txt file to keep only two days in log
+        with open("GraphDataLog.txt", "w") as f:
+            f.write("xdate,temp,press,rain_1h,windspeed,windgust,snow_1h\n")
+            f.writelines(filtered_data)
 
 
         text_x = weather_icon.get_size()[0]
@@ -230,7 +255,7 @@ class DailyWeatherForecast(WeatherModule):
                                                  self.units)
         temperature_high = Utils.temperature_text(int(temperature_high),
                                                   self.units)
-        message = "{}-{}".format(temperature_low, temperature_high)
+        message = "{} I {}".format(temperature_low, temperature_high)
 
         self.clear_surface()
         self.draw_text(day_of_week, (0, 0), "small", "orange", align="center")
@@ -289,11 +314,44 @@ class SunriseSuset(WeatherModule):
         sunset = "\u2199 {}".format(Utils.strftime(sunset, "%H:%M"))
         sun_icon = Utils.weather_icon("01d", self.icon_size)
 
+
         self.clear_surface()
         self.draw_image(sun_icon, ((self.rect.width - self.icon_size) / 2,
                                    (self.rect.height - self.icon_size + 9) / 2))
         self.draw_text(sunrise, (0, 5), "small", "white", align="center")
         self.draw_text(sunset, (0, self.rect.height - 20),
+                       "small",
+                       "white",
+                       align="center")
+        self.update_screen(screen)
+
+class MoonriseMoonset(WeatherModule):
+    """Moonrise, Moonset time
+    """
+
+    def __init__(self, fonts, location, language, units, config):
+        super().__init__(fonts, location, language, units, config)
+        self.icon_size = config["icon_size"] if "icon_size" in config else 40
+
+    def draw(self, screen, weather, updated):
+        if weather is None or not updated:
+            return
+
+        daily = weather["daily"][0]
+        moonrise = daily["moonrise"]
+        moonset = daily["moonset"]
+
+        moonrise = "{} \u2197".format(Utils.strftime(moonrise, "%H:%M"))
+        moonset = "\u2199 {}".format(Utils.strftime(moonset, "%H:%M"))
+        moon_icon = Utils.weather_icon("01n", self.icon_size)
+        print(moonrise)
+        print(moonset)
+
+        self.clear_surface()
+        self.draw_image(moon_icon, ((self.rect.width - self.icon_size) / 2,
+                                   (self.rect.height - self.icon_size + 9) / 2))
+        self.draw_text(moonrise, (0, 5), "small", "white", align="center")
+        self.draw_text(moonset, (0, self.rect.height - 20),
                        "small",
                        "white",
                        align="center")
