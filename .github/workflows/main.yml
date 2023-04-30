@@ -20,13 +20,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - name: Set up Python 3.9.2
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9.2
+      #- name: Set up Python 3.9.2
+      #  uses: actions/setup-python@v2
+      #  with:
+      #    python-version: 3.9.2
       - name: Run Python commands
         run: |
           pip install --upgrade pip
-          python 3.9.2 -m venv venv
-          source env/bin/activate
-          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+          #python 3.9.2 -m venv venv
+          #source env/bin/activate
+          #echo "VIRTUAL ENV:" $VIRTUAL_ENV
